@@ -51,6 +51,8 @@ target_link_libraries(SmartAlarm
         hardware_timer
         hardware_watchdog
         hardware_clocks
+        util_queue
+        pico_multicore
         pico_cyw43_arch_lwip_threadsafe_background
         )
 
