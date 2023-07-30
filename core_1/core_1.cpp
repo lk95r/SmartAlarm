@@ -13,20 +13,48 @@
 #include "lwip/dns.h"
 #include "lwip/pbuf.h"
 #include "lwip/udp.h"
+#include "hardware/rtc.h"
+#include "pico/util/datetime.h"
+#include "pico/util/queue.h"
+#include "pico/multicore.h"
 
+extern "C"{
+ // #include "lwipopts.h"  
+}
 #include "wifi_data.h"
 #include "core_1.h"
 
-
-
+queue_t q_date_time;
+bool date_received = false;
 
 
 // Called with results of operation
 static void ntp_result(NTP_T* state, int status, time_t *result) {
+    datetime_t dt;
     if (status == 0 && result) {
         struct tm *utc = gmtime(result);
-        printf("got ntp response: %02d/%02d/%04d %02d:%02d:%02d\n", utc->tm_mday, utc->tm_mon + 1, utc->tm_year + 1900,
-               utc->tm_hour, utc->tm_min, utc->tm_sec);
+        printf("c1: got ntp response: %02d/%02d/%04d %02d:%02d:%02d\n", utc->tm_mday, utc->tm_mon + 1, utc->tm_year + 1900,
+               (utc->tm_hour)+2, utc->tm_min, utc->tm_sec);
+
+            dt.year = utc->tm_year+1900;
+            dt.month = utc->tm_mon+1;
+            dt.day = utc->tm_mday;
+            dt.dotw = 6;
+            dt.hour = ((utc->tm_hour)+2)%24;
+            dt.min = utc->tm_min;
+            dt.sec = utc->tm_sec;
+            //printf("c1: put val in q\n");
+            //queue_add_blocking(&q_date_time,&dt);
+            //printf("c1: val added\n");
+            rtc_init();
+            if(rtc_set_datetime(&dt)){
+                date_received = true;
+            }
+            printf("c1: uhr läuft");
+            //busy_wait_ms(1);
+            //rtc_get_datetime(&dt);
+            //printf("%d:%d:%d\n",dt.hour,dt.min,dt.sec);
+
     }
 
     if (state->ntp_resend_alarm > 0) {
@@ -58,7 +86,7 @@ static void ntp_request(NTP_T *state) {
 static int64_t ntp_failed_handler(alarm_id_t id, void *user_data)
 {
     NTP_T* state = (NTP_T*)user_data;
-    printf("ntp request failed\n");
+    printf("c1: ntp request failed\n");
     ntp_result(state, -1, NULL);
     return 0;
 }
@@ -68,10 +96,10 @@ static void ntp_dns_found(const char *hostname, const ip_addr_t *ipaddr, void *a
     NTP_T *state = (NTP_T*)arg;
     if (ipaddr) {
         state->ntp_server_address = *ipaddr;
-        printf("ntp address %s\n", ipaddr_ntoa(ipaddr));
+        printf("c1: ntp address %s\n", ipaddr_ntoa(ipaddr));
         ntp_request(state);
     } else {
-        printf("ntp dns request failed\n");
+        printf("c1: ntp dns request failed\n");
         ntp_result(state, -1, NULL);
     }
 }
@@ -92,7 +120,7 @@ static void ntp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, const ip_ad
         time_t epoch = seconds_since_1970;
         ntp_result(state, 0, &epoch);
     } else {
-        printf("invalid ntp response\n");
+        printf("c1: invalid ntp response\n");
         ntp_result(state, -1, NULL);
     }
     pbuf_free(p);
@@ -102,12 +130,12 @@ static void ntp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, const ip_ad
 static NTP_T* ntp_init(void) {
     NTP_T *state = (NTP_T*)calloc(1, sizeof(NTP_T));
     if (!state) {
-        printf("failed to allocate state\n");
+        printf("c1: failed to allocate state\n");
         return NULL;
     }
     state->ntp_pcb = udp_new_ip_type(IPADDR_TYPE_ANY);
     if (!state->ntp_pcb) {
-        printf("failed to create pcb\n");
+        printf("c1: failed to create pcb\n");
         free(state);
         return NULL;
     }
@@ -120,7 +148,7 @@ void run_ntp_test(void) {
     NTP_T *state = ntp_init();
     if (!state)
         return;
-    while(true) {
+    while(!date_received) {
         if (absolute_time_diff_us(get_absolute_time(), state->ntp_test_time) < 0 && !state->dns_request_sent) {
             // Set alarm in case udp requests are lost
             state->ntp_resend_alarm = add_alarm_in_ms(NTP_RESEND_TIME, ntp_failed_handler, state, true);
@@ -137,7 +165,7 @@ void run_ntp_test(void) {
             if (err == ERR_OK) {
                 ntp_request(state); // Cached result
             } else if (err != ERR_INPROGRESS) { // ERR_INPROGRESS means expect a callback
-                printf("dns request failed\n");
+                printf("c1: dns request failed\n");
                 ntp_result(state, -1, NULL);
             }
         }
@@ -156,18 +184,24 @@ void run_ntp_test(void) {
 #endif
     }
     free(state);
+    printf("c1: date received, nothing more to do for me\n");
 }
 
 int core_1_main(void){
+    printf("c1: cor1main accessed\n");
     if (cyw43_arch_init()) {
-        printf("failed to initialise\n");
+        printf("c1: failed to initialise\n");
         return 1;
     }
     cyw43_arch_enable_sta_mode();
-    if (cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000)) {
-        printf("failed to connect\n");
-        return 1;
+    bool not_connected = true;
+    while(not_connected){
+        not_connected = cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000);
+        if(not_connected == false) break;
+        printf("c1: faled to connect ...retry\n");
+        sleep_ms(30000);
     }
+    printf("c1: connected!\n");
     run_ntp_test();
     cyw43_arch_deinit();
     return 0;

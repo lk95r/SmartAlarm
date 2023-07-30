@@ -1,6 +1,16 @@
 #ifndef CORE_1_H
 #define CORE_1_h
+#include <string.h>
+#include <time.h>
 
+#include "pico/stdlib.h"
+#include "pico/cyw43_arch.h"
+
+#include "lwip/dns.h"
+#include "lwip/pbuf.h"
+#include "lwip/udp.h"
+
+#include "wifi_data.h"
 
 typedef struct NTP_T_ {
     ip_addr_t ntp_server_address;
