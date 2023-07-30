@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Initialise pico_sdk from installed location
 # (note this can come from environment, CMake cache etc)
-set(PICO_SDK_PATH "/home/lka/pico/pico-sdk")
+set(PICO_SDK_PATH "C:/Program Files/Raspberry Pi/Pico SDK v1.5.1/pico-sdk")
 
 set(PICO_BOARD pico_w CACHE STRING "Board type")
 
@@ -30,7 +30,7 @@ add_executable(SmartAlarm SmartAlarm.cpp )
 pico_set_program_name(SmartAlarm "SmartAlarm")
 pico_set_program_version(SmartAlarm "0.1")
 
-pico_enable_stdio_uart(SmartAlarm 1)
+pico_enable_stdio_uart(SmartAlarm 0)
 pico_enable_stdio_usb(SmartAlarm 1)
 
 # Add the standard library to the build
@@ -42,6 +42,9 @@ target_include_directories(SmartAlarm PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}
   ${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
 )
+add_subdirectory(
+  core_1
+)
 
 # Add any user requested libraries
 target_link_libraries(SmartAlarm 
@@ -51,9 +54,9 @@ target_link_libraries(SmartAlarm
         hardware_timer
         hardware_watchdog
         hardware_clocks
-        util_queue
         pico_multicore
         pico_cyw43_arch_lwip_threadsafe_background
+        core_1
         )
 
 pico_add_extra_outputs(SmartAlarm)
