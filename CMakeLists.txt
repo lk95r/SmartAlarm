@@ -26,7 +26,7 @@ pico_sdk_init()
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(SmartAlarm SmartAlarm.cpp)
-
+pico_generate_pio_header(SmartAlarm ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio)
 pico_set_program_name(SmartAlarm "SmartAlarm")
 pico_set_program_version(SmartAlarm "0.1")
 
@@ -49,6 +49,7 @@ add_subdirectory(
 
 # Add any user requested libraries
 target_link_libraries(SmartAlarm 
+        pico_stdlib
         hardware_spi
         hardware_pio
         hardware_interp
@@ -57,7 +58,6 @@ target_link_libraries(SmartAlarm
         hardware_clocks
         hardware_rtc
         pico_multicore
-        pico_cyw43_arch_lwip_threadsafe_background
         core_1
         )
 

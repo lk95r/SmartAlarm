@@ -8,10 +8,7 @@
 #include "hardware/clocks.h"
 #include "hardware/rtc.h"
 #include "pico/util/datetime.h"
-//#include "pico/cyw43_arch.h"
-extern "C"{
-  #include "core_1/lwipopts.h"  
-}
+
 
 #include "pico/util/queue.h"
 #include "pico/multicore.h"
