@@ -41,7 +41,7 @@ static void set_clock(void) {
     printf("c1: uhr läuft");
 
 
-    }
+}
 
 
 int core_1_main(void){

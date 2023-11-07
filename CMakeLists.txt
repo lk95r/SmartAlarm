@@ -37,15 +37,21 @@ pico_enable_stdio_usb(SmartAlarm 1)
 target_link_libraries(SmartAlarm
         pico_stdlib)
 
+add_subdirectory(
+  ./libs
+)
+
+add_subdirectory(
+  ./core_1
+)
 # Add the standard include files to the build
 target_include_directories(SmartAlarm PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}
   ${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
+  ${CMAKE_CURRENT_LIST_DIR}/libs/sm_display 
   ${CMAKE_CURRENT_LIST_DIR}/core_1
 )
-add_subdirectory(
-  core_1
-)
+
 
 # Add any user requested libraries
 target_link_libraries(SmartAlarm 
@@ -58,6 +64,7 @@ target_link_libraries(SmartAlarm
         hardware_clocks
         hardware_rtc
         pico_multicore
+        sm_display        
         core_1
         )
 
