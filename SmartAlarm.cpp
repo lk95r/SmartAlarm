@@ -35,6 +35,7 @@ displayDirection e_menu_instruction;
 displayDirection getDirection(void){
     char c_user_input;
     displayDirection temp_insutruction;
+    temp_insutruction = dNone;
     c_user_input = getchar();
     printf("Input: %c\n",c_user_input);
     if(c_user_input == 'l'|| c_user_input == 'L'){
@@ -43,9 +44,9 @@ displayDirection getDirection(void){
         temp_insutruction = dRight;
     }else if(c_user_input == 'u'|| c_user_input == 'U'){
         temp_insutruction =dUp;
-    }else if(c_user_input = 'd'|| c_user_input =='D'){
+    }else if(c_user_input == 'd'|| c_user_input =='D'){
         temp_insutruction = dDown;
-    }else if(c_user_input = 'e'|| c_user_input == 'E'){
+    }else if(c_user_input == 'e'|| c_user_input == 'E'){
         temp_insutruction = dEnter;
     }else{
         temp_insutruction = dNone;
