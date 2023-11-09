@@ -7,4 +7,5 @@ target_link_libraries(core_1
 pico_stdlib
 pico_multicore
 hardware_rtc
+hardware_adc
 )

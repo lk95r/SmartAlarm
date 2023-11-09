@@ -33,12 +33,12 @@ void SM_Display::sm_state_init(displayDirection directeion)
 
 void SM_Display::sm_state_idle(displayDirection direction)
 {
-    static datetime_t dt;
+
     if (rtc_running())
     {
         printf("State: Idle \n");
-        rtc_get_datetime(&dt);
-        printf("%d:%d:%d\n", dt.hour, dt.min, dt.sec);
+        rtc_get_datetime(&m_dt);
+        printf("%d:%d:%d\n", m_dt.hour, m_dt.min, m_dt.sec);
     }
     switch (direction)
     {
@@ -58,7 +58,7 @@ void SM_Display::sm_state_toggle_alarm(displayDirection direction)
 {
     printf("State: toggle Alarm \n");
     printf("____________\n");
-    printf("Vorlaufzeit\n");
+    printf("Vorlaufzeit einstellen\n");
     printf(">Alarm (de)aktivieren\n");
     printf("Wecker stellen\n");
     printf("Uhrzeit einstellen\n");
@@ -224,7 +224,6 @@ void SM_Display::sm_state_clock_hour(displayDirection direction)
 {
     static int temp_h = 6;
     printf("state: set clock_h = %d\n", temp_h);
-
     switch (direction)
     {
     case dTimeout:
@@ -232,6 +231,13 @@ void SM_Display::sm_state_clock_hour(displayDirection direction)
         break;
 
     case dEnter:
+        if (rtc_running())
+        {
+            rtc_get_datetime(&m_dt);
+        }
+        m_dt.hour=temp_h;
+        rtc_set_datetime(&m_dt);
+        printf("Clock set");
         next(&SM_Display::sm_state_idle);
         break;
     case dUp:
@@ -250,9 +256,15 @@ void SM_Display::sm_state_clock_hour(displayDirection direction)
         next(&SM_Display::sm_state_clock_hour);
         break;
     case dLeft:
+        m_dt.hour=temp_h;
         next(&SM_Display::sm_state_set_clock);
         break;
     case dRight:
+        if (rtc_running())
+        {
+            rtc_get_datetime(&m_dt);
+        }
+        m_dt.hour = temp_h;
         next(&SM_Display::sm_state_clock_min);
         break;
     default:
@@ -271,6 +283,9 @@ void SM_Display::sm_state_clock_min(displayDirection direction)
         break;
 
     case dEnter:
+        m_dt.min=temp_min;
+        rtc_set_datetime(&m_dt);
+        printf("Clock set");
         next(&SM_Display::sm_state_idle);
         break;
     case dUp:

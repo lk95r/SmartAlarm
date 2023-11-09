@@ -7,6 +7,8 @@
 #include "hardware/watchdog.h"
 #include "hardware/clocks.h"
 #include "hardware/rtc.h"
+#include "hardware/adc.h"
+#include "hardware/gpio.h"
 #include "pico/util/datetime.h"
 #include "libs/sm_display/sm_display.h"
 
@@ -14,13 +16,18 @@
 #include "pico/multicore.h"
 #include "core_1/core_1.h"
 #define FLAG_VALUE 123
-
+#define JOYSTICK true
+#define DEBOUNCE_DELAY 600
+#define PIN_JOYSTICK_X 26
+#define PIN_JOYSTICK_Y 27
+#define PIN_JOYSTICK_SW 22
 
 
 extern queue_t q_date_time;
 datetime_t dt;
 bool error;
 SM_Display fsm_display;
+volatile bool sw_triggered = false; 
 
 displayDirection e_menu_instruction;
 // SPI Defines
@@ -32,10 +39,60 @@ displayDirection e_menu_instruction;
 #define PIN_SCK  18
 #define PIN_MOSI 19
 
+void gpio_sw_callback(uint gpio, uint32_t events){
+    static uint64_t u64_ts_last_input = 0;
+    if(to_ms_since_boot(get_absolute_time())-u64_ts_last_input>DEBOUNCE_DELAY){
+        u64_ts_last_input = to_ms_since_boot(get_absolute_time());
+        printf("ENTER\n");
+        fsm_display.run(dEnter);
+    }
+    
+}
+
 displayDirection getDirection(void){
     char c_user_input;
-    displayDirection temp_insutruction;
-    temp_insutruction = dNone;
+    displayDirection temp_insutruction = dNone;
+    static displayDirection last_instruction = dNone;
+    static uint64_t u64_ts_last_input = to_ms_since_boot(get_absolute_time());
+    #if JOYSTICK
+    adc_select_input(0);
+    uint adc_x = adc_read();
+    adc_select_input(1);
+    uint adc_y = adc_read();
+    adc_x /= 500;
+    adc_y /= 500;
+    if (adc_x<3){
+        temp_insutruction = dLeft;
+        //DEBUG
+        //printf("Left,%d\n",adc_x);
+    }
+    else if ( adc_x > 5){
+        temp_insutruction = dRight;
+        //DEBUG
+        //printf("Right,%d",adc_x);
+    }
+    if(adc_y < 3){
+        temp_insutruction = dUp;
+        //DEBUG
+        //printf("Up,%d",adc_y);
+    } else if (adc_y >5){
+        temp_insutruction = dDown;
+        //DEBUG
+        //printf("Down,%d",adc_y);
+    }
+    if(to_ms_since_boot(get_absolute_time())-u64_ts_last_input>DEBOUNCE_DELAY || 
+        last_instruction != temp_insutruction){
+        last_instruction = temp_insutruction;
+        u64_ts_last_input = to_ms_since_boot(get_absolute_time());
+        return temp_insutruction;
+    }else{
+        temp_insutruction = dNone;
+        return temp_insutruction;
+    }
+    //DEBUG
+    //if(temp_insutruction == dNone)printf("None x:%i, y:%i",adc_x,adc_y);
+    //printf("\n");
+    #else
     c_user_input = getchar();
     printf("Input: %c\n",c_user_input);
     if(c_user_input == 'l'|| c_user_input == 'L'){
@@ -51,6 +108,7 @@ displayDirection getDirection(void){
     }else{
         temp_insutruction = dNone;
     }
+    #endif
     return temp_insutruction;
 }
 
@@ -82,6 +140,13 @@ void check_rtc(){
 int main()
 {
     stdio_init_all();
+    adc_init();
+    adc_gpio_init(PIN_JOYSTICK_X);
+    adc_gpio_init(PIN_JOYSTICK_Y);
+    gpio_set_dir(PIN_JOYSTICK_SW,false);
+    gpio_set_input_enabled(PIN_JOYSTICK_SW,true);
+    gpio_set_pulls(PIN_JOYSTICK_SW,true,false);
+    gpio_set_irq_enabled_with_callback(PIN_JOYSTICK_SW, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_sw_callback);
     printf("c0: started\n");
     // SPI initialisation. This example will use SPI at 1MHz.
     //spi_init(SPI_PORT, 1000*1000);
@@ -99,11 +164,10 @@ int main()
     multicore_launch_core1(core1_entry);
     printf("c0: started core1\n");
     while(1){
-        printf("c0: alive\n");
-        sleep_ms(1000);
+        sleep_ms(100);
         e_menu_instruction = getDirection();
         fsm_display.run(e_menu_instruction);
-        check_rtc();
+        //check_rtc();
     }
     return 0;
 }

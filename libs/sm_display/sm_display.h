@@ -20,6 +20,7 @@ class SM_Display{
         SM_Display();
         void run(displayDirection);
     private:
+        datetime_t m_dt;
         void (SM_Display:: *next_function)(displayDirection);
         void next(void (SM_Display::*funcptr)(displayDirection));
         void sm_state_init(displayDirection direction);

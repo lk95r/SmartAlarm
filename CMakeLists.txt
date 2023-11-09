@@ -63,6 +63,8 @@ target_link_libraries(SmartAlarm
         hardware_watchdog
         hardware_clocks
         hardware_rtc
+        hardware_adc
+        hardware_gpio
         pico_multicore
         sm_display        
         core_1
