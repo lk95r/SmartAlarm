@@ -8,9 +8,18 @@
 SM_Display::SM_Display(void)
 {
     next_function = nullptr;
+    this->m_alarm_time={
+        .year=-1,
+        .month=-1,
+        .day=-1,
+        .dotw=-1,
+        .hour=0,
+        .min=0,
+        .sec=0,
+    };
     next(&SM_Display::sm_state_init);
-    test_print();
 }
+
 
 void SM_Display::run(displayDirection direction)
 {
@@ -20,6 +29,18 @@ void SM_Display::run(displayDirection direction)
     }
     return;
 }
+
+int SM_Display::sm_set_callback(void* callback){
+    if(callback == nullptr){
+        return -1;
+    }
+    else{
+        this->ptr_alarm_callback = callback; 
+        return 0;
+    }
+    
+}
+
 void SM_Display::next(void (SM_Display::*funcptr)(displayDirection))
 {
     next_function = funcptr;
@@ -67,6 +88,17 @@ void SM_Display::sm_state_toggle_alarm(displayDirection direction)
     {
     case dEnter:
         printf("Alarm de(aktiviert)\n");
+        if(m_alarm_active==false){
+            rtc_enable_alarm();
+            m_alarm_active = true;
+            //DEBUG
+            printf("Alarm enabled");
+        }else if(m_alarm_active==true){
+            rtc_disable_alarm();
+            m_alarm_active = false;
+            //DEBUG
+            printf("Alarm disabled");
+        }
         next(&SM_Display::sm_state_idle);
         break;
     case dTimeout:
@@ -126,6 +158,8 @@ void SM_Display::sm_state_alarm_hour(displayDirection direction)
         break;
 
     case dEnter:
+        m_alarm_time.hour = temp_h;
+        rtc_set_alarm(&m_alarm_time,(rtc_callback_t )ptr_alarm_callback); //TODO: incorporate pre runtime
         next(&SM_Display::sm_state_idle);
         break;
     case dUp:
@@ -147,6 +181,7 @@ void SM_Display::sm_state_alarm_hour(displayDirection direction)
         next(&SM_Display::sm_state_set_alarm);
         break;
     case dRight:
+        m_alarm_time.hour = temp_h;
         next(&SM_Display::sm_state_alarm_min);
         break;
     default:
@@ -165,6 +200,8 @@ void SM_Display::sm_state_alarm_min(displayDirection direction)
         break;
 
     case dEnter:
+        m_alarm_time.min = temp_min;
+        rtc_set_alarm(&m_alarm_time,(rtc_callback_t)ptr_alarm_callback); //TODO: incorporate pre runtime
         next(&SM_Display::sm_state_idle);
         break;
     case dUp:
@@ -183,6 +220,7 @@ void SM_Display::sm_state_alarm_min(displayDirection direction)
         next(&SM_Display::sm_state_alarm_min);
         break;
     case dLeft:
+        m_alarm_time.min = temp_min;
         next(&SM_Display::sm_state_alarm_hour);
         break;
     default:
@@ -235,7 +273,7 @@ void SM_Display::sm_state_clock_hour(displayDirection direction)
         {
             rtc_get_datetime(&m_dt);
         }
-        m_dt.hour=temp_h;
+        m_dt.hour = temp_h;
         rtc_set_datetime(&m_dt);
         printf("Clock set");
         next(&SM_Display::sm_state_idle);
@@ -256,7 +294,7 @@ void SM_Display::sm_state_clock_hour(displayDirection direction)
         next(&SM_Display::sm_state_clock_hour);
         break;
     case dLeft:
-        m_dt.hour=temp_h;
+        m_dt.hour = temp_h;
         next(&SM_Display::sm_state_set_clock);
         break;
     case dRight:
@@ -283,7 +321,7 @@ void SM_Display::sm_state_clock_min(displayDirection direction)
         break;
 
     case dEnter:
-        m_dt.min=temp_min;
+        m_dt.min = temp_min;
         rtc_set_datetime(&m_dt);
         printf("Clock set");
         next(&SM_Display::sm_state_idle);

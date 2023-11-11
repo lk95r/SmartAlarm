@@ -18,9 +18,13 @@ enum displayDirection {
 class SM_Display{
     public:
         SM_Display();
+        int sm_set_callback(void* callback);
         void run(displayDirection);
     private:
         datetime_t m_dt;
+        datetime_t m_alarm_time;
+        bool m_alarm_active=false; //false when alarm is inactive, true when active
+        void* ptr_alarm_callback;
         void (SM_Display:: *next_function)(displayDirection);
         void next(void (SM_Display::*funcptr)(displayDirection));
         void sm_state_init(displayDirection direction);

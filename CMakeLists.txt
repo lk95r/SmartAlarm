@@ -30,8 +30,8 @@ pico_generate_pio_header(SmartAlarm ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio)
 pico_set_program_name(SmartAlarm "SmartAlarm")
 pico_set_program_version(SmartAlarm "0.1")
 
-pico_enable_stdio_uart(SmartAlarm 0)
-pico_enable_stdio_usb(SmartAlarm 1)
+pico_enable_stdio_uart(SmartAlarm 1)
+pico_enable_stdio_usb(SmartAlarm 0)
 
 # Add the standard library to the build
 target_link_libraries(SmartAlarm
