@@ -5,7 +5,10 @@
 #include "sm_display.h"
 
 
-// Konstruktor
+/**
+ * @brief Construct a new sm display::sm display object as a state machine
+ * and initializes m_Oled object
+ */
 SM_Display::SM_Display(void): m_Oled(OLED_128x64, 0x3c, 0, 0, PICO_I2C, SDA_PIN, SCL_PIN, I2C_SPEED)
 {
     next_function = nullptr;
@@ -23,7 +26,11 @@ SM_Display::SM_Display(void): m_Oled(OLED_128x64, 0x3c, 0, 0, PICO_I2C, SDA_PIN,
     next(&SM_Display::sm_state_init);
 }
 
-
+/**
+ * @brief runs next iteration of State machine
+ * 
+ * @param direction input to statemachine
+ */
 void SM_Display::run(displayDirection direction)
 {
     if (next_function != nullptr)
@@ -33,6 +40,13 @@ void SM_Display::run(displayDirection direction)
     return;
 }
 
+/**
+ * @brief set callback function to be called for alarm
+ * 
+ * @param callback function pointer to callback function
+ * @return int -1 when nullptr is passed
+ * @return int 0 success
+ */
 int SM_Display::sm_set_callback(void* callback){
     if(callback == nullptr){
         return -1;
@@ -44,17 +58,34 @@ int SM_Display::sm_set_callback(void* callback){
     
 }
 
+/**
+ * @brief set next function to be called by state machine needs to be a function from fsm
+ * 
+ * @param funcptr 
+ */
 void SM_Display::next(void (SM_Display::*funcptr)(displayDirection))
 {
     next_function = funcptr;
 }
 
-void SM_Display::sm_state_init(displayDirection directeion)
+/**
+ * @brief init states -> idle
+ * 
+ * @param direction 
+ */
+void SM_Display::sm_state_init(displayDirection direction)
 {
     next(&SM_Display::sm_state_idle);
     return;
 }
 
+/**
+ * @brief idle state displays clock and temperatur
+ * 
+ * Next states: Menu
+ * 
+ * @param direction input to statemachine possible to open menu
+ */
 void SM_Display::sm_state_idle(displayDirection direction)
 {
 
@@ -78,6 +109,11 @@ void SM_Display::sm_state_idle(displayDirection direction)
     }
 }
 
+/**
+ * @brief displays menu and toggles alarm when enter is pressed
+ * 
+ * @param direction menu control/ dEnter -> Toggle alarm, idle / dUp/dDown scroll Menu / dLeft -> idle
+ */
 void SM_Display::sm_state_toggle_alarm(displayDirection direction){
     printf("State: toggle Alarm \n");
     printf("____________\n");
@@ -131,6 +167,11 @@ void SM_Display::sm_state_toggle_alarm(displayDirection direction){
     }
 }
 
+/**
+ * @brief menu entry to set alarm
+ * 
+ * @param direction control menu, dRight / dEnter -> set hour/ dUp/dDown -> next menu entry / dLeft -> back to idle
+ */
 void SM_Display::sm_state_set_alarm(displayDirection direction)
 {
     printf("State: set_alarm\n");
@@ -174,7 +215,11 @@ void SM_Display::sm_state_set_alarm(displayDirection direction)
         next(&SM_Display::sm_state_set_alarm);
     }
 }
-
+/**
+ * @brief set hour for alarm
+ * 
+ * @param direction conrol dRight -> set min / dEnter -> save hour / dLeft -> back to menu
+ */
 void SM_Display::sm_state_alarm_hour(displayDirection direction)
 {
     static int temp_h = 6;
@@ -218,6 +263,11 @@ void SM_Display::sm_state_alarm_hour(displayDirection direction)
     }
 }
 
+/**
+ * @brief set min for alarm
+ * 
+ * @param direction dEnter -> confirm, idle / dLeft -> set Hour / dUp/dDown -> set min
+ */
 void SM_Display::sm_state_alarm_min(displayDirection direction)
 {
     static int temp_min = 6;
@@ -257,6 +307,11 @@ void SM_Display::sm_state_alarm_min(displayDirection direction)
     }
 }
 
+/**
+ * @brief menu entry to set clock
+ * 
+ * @param direction control menu, dRight / dEnter -> set hour/ dUp/dDown -> next menu entry / dLeft -> back to idle
+ */
 void SM_Display::sm_state_set_clock(displayDirection direction)
 {
     printf("State: set_clock\n");
@@ -299,6 +354,11 @@ void SM_Display::sm_state_set_clock(displayDirection direction)
     }
 }
 
+/**
+ * @brief set hour for clock
+ * 
+ * @param direction conrol dRight -> set min / dEnter -> save hour / dLeft -> back to menu
+ */
 void SM_Display::sm_state_clock_hour(displayDirection direction)
 {
     static int temp_h = 6;
@@ -351,6 +411,11 @@ void SM_Display::sm_state_clock_hour(displayDirection direction)
     }
 }
 
+/**
+ * @brief set min for clock
+ * 
+ * @param direction dEnter -> confirm, idle / dLeft -> set Hour / dUp/dDown -> set min
+ */
 void SM_Display::sm_state_clock_min(displayDirection direction)
 {
     static int temp_min = 6;
@@ -390,6 +455,11 @@ void SM_Display::sm_state_clock_min(displayDirection direction)
     }
 }
 
+/**
+ * @brief menu entry to select alarm tone
+ * 
+ * @param direction dLeft -> back to idle / dEnter/dRight -> select tone
+ */
 void SM_Display::sm_state_set_alarmtone(displayDirection direction)
 {
     printf("State: set_alarmtone\n");
@@ -432,6 +502,11 @@ void SM_Display::sm_state_set_alarmtone(displayDirection direction)
     }
 }
 
+/**
+ * @brief scroll trough saved alarm tones
+ * 
+ * @param direction dLeft -> back to Menu / dEnter -> confirm, back to idle / dUp/dDown -> scroll through tones
+ */
 void SM_Display::sm_state_adjust_tone(displayDirection direction)
 {
     static int tone_nr = 0;
@@ -460,6 +535,11 @@ void SM_Display::sm_state_adjust_tone(displayDirection direction)
     }
 }
 
+/**
+ * @brief menu entry to set runtume
+ * 
+ * @param direction dLeft -> back to idle / dEnter/dRight -> set time
+ */
 void SM_Display::sm_state_set_pre_runtime(displayDirection direction)
 {
     printf("State: set_pre_runtime\n");
@@ -502,6 +582,11 @@ void SM_Display::sm_state_set_pre_runtime(displayDirection direction)
     }
 }
 
+/**
+ * @brief set runtime
+ * 
+ * @param direction dLeft -> back to Menu / dEnter -> confirm, back to idle / dUp/dDown -> set time (mins)
+ */
 void SM_Display::sm_state_adjust_time(displayDirection direction)
 {
     static int duration_min = 0;
@@ -529,6 +614,12 @@ void SM_Display::sm_state_adjust_time(displayDirection direction)
         next(&SM_Display::sm_state_adjust_time);
     }
 }
+
+/**
+ * @brief menu entry to control brightness
+ * 
+ * @param direction dLeft -> back to idle / dEnter/dRight -> control brightness
+ */
 void SM_Display::sm_m_state_adjust_brightness(displayDirection direction){
     m_Oled.write_string(0, 0, 0, (char *)"*************",FONT_8x8, 0,1);
     m_Oled.write_string(0, 0, 1, (char *)"Toggle Alarm", FONT_8x8, 0, 1);
@@ -563,6 +654,11 @@ void SM_Display::sm_m_state_adjust_brightness(displayDirection direction){
     }
 } 
 
+/**
+ * @brief adjust brighntess 
+ * 
+ * @param direction dLeft -> back to Menu / dEnter -> confirm, back to idle / dUp/dDown -> adjust brightness
+ */
 void SM_Display::sm_state_adjust_brightness(displayDirection direction){
     static int brighntess = 50;
     m_Oled.write_string(0, 0, 1, (char *)"Toggle Alarm    ", FONT_8x8, 0, 1);
@@ -590,6 +686,12 @@ void SM_Display::sm_state_adjust_brightness(displayDirection direction){
     }
 }
 
+
+/**
+ * @brief deprecated -> for debugging purposes
+ * 
+ * @param direction 
+ */
 void SM_Display::sm_state_on(displayDirection direction)
 {
     printf("on\n");
@@ -606,6 +708,11 @@ void SM_Display::sm_state_on(displayDirection direction)
     return;
 }
 
+/**
+ * @brief deprecated -> for debugging pruposes
+ * 
+ * @param direction 
+ */
 void SM_Display::sm_state_off(displayDirection direction)
 {
     printf("off\n");
