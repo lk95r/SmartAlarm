@@ -1,0 +1,3 @@
+[submodule "libs/pi-pico-ss-oled"]
+	path = libs/pi-pico-ss-oled
+	url = https://github.com/martinkooij/pi-pico-ss-oled.git
