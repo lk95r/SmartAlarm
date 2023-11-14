@@ -4,8 +4,9 @@
 
 #include "sm_display.h"
 
+
 // Konstruktor
-SM_Display::SM_Display(void)
+SM_Display::SM_Display(void): m_Oled(OLED_128x64, 0x3c, 0, 0, PICO_I2C, SDA_PIN, SCL_PIN, I2C_SPEED)
 {
     next_function = nullptr;
     this->m_alarm_time={
@@ -17,6 +18,8 @@ SM_Display::SM_Display(void)
         .min=0,
         .sec=0,
     };
+    m_Oled.init();
+    m_Oled.fill(0,1);
     next(&SM_Display::sm_state_init);
 }
 
@@ -64,7 +67,7 @@ void SM_Display::sm_state_idle(displayDirection direction)
     switch (direction)
     {
     case dUp:
-        next(&SM_Display::sm_state_set_pre_runtime);
+        next(&SM_Display::sm_m_state_adjust_brightness);
         break;
     case dEnter:
     case dDown:
@@ -75,8 +78,7 @@ void SM_Display::sm_state_idle(displayDirection direction)
     }
 }
 
-void SM_Display::sm_state_toggle_alarm(displayDirection direction)
-{
+void SM_Display::sm_state_toggle_alarm(displayDirection direction){
     printf("State: toggle Alarm \n");
     printf("____________\n");
     printf("Vorlaufzeit einstellen\n");
@@ -84,9 +86,19 @@ void SM_Display::sm_state_toggle_alarm(displayDirection direction)
     printf("Wecker stellen\n");
     printf("Uhrzeit einstellen\n");
     printf("____________\n");
+    //myOled.set_contrast(50);
+    m_Oled.write_string(0, 0, 0, (char *)"*************",FONT_8x8, 0,1);
+    m_Oled.write_string(0, 0, 1, (char *)">Toggle Alarm", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 2, (char *)"Set Alarm", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 3, (char *)"Set Clock", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 4, (char *)"Set Tone", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 5, (char *)"Set Runtime",FONT_8x8,0,1);
+    m_Oled.write_string(0, 0, 6, (char *)"Set Bringhtness",FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 7, (char *)"*************",FONT_8x8,0, 1);
     switch (direction)
     {
     case dEnter:
+        m_Oled.fill(0,1);
         printf("Alarm de(aktiviert)\n");
         if(m_alarm_active==false){
             rtc_enable_alarm();
@@ -103,12 +115,15 @@ void SM_Display::sm_state_toggle_alarm(displayDirection direction)
         break;
     case dTimeout:
     case dLeft:
+        m_Oled.write_string(0, 0, 1, (char *)"Toggle Alarm    ", FONT_8x8, 0, 1);
         next(&SM_Display::sm_state_idle);
         break;
     case dUp:
-        next(&SM_Display::sm_state_set_pre_runtime);
+        m_Oled.write_string(0, 0, 1, (char *)"Toggle Alarm    ", FONT_8x8, 0, 1);
+        next(&SM_Display::sm_m_state_adjust_brightness);
         break;
     case dDown:
+        m_Oled.write_string(0, 0, 1, (char *)"Toggle Alarm    ", FONT_8x8, 0, 1);
         next(&SM_Display::sm_state_set_alarm);
         break;
     default:
@@ -125,20 +140,34 @@ void SM_Display::sm_state_set_alarm(displayDirection direction)
     printf("Uhrzeit einstellen\n");
     printf("Weckton aussuchen\n");
     printf("____________\n");
+
+    m_Oled.write_string(0, 0, 0, (char *)"*************",FONT_8x8, 0,1);
+    m_Oled.write_string(0, 0, 1, (char *)"Toggle Alarm", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 2, (char *)">Set Alarm", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 3, (char *)"Set Clock", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 4, (char *)"Set Tone", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 5, (char *)"Set Runtime",FONT_8x8,0,1);
+    m_Oled.write_string(0, 0, 6, (char *)"Set Bringhtness",FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 7, (char *)"*************",FONT_8x8,0, 1);
+
     switch (direction)
     {
     case dTimeout:
     case dLeft:
+        m_Oled.fill(0,1);
         next(&SM_Display::sm_state_idle);
         break;
     case dEnter:
     case dRight:
+        m_Oled.fill(0,1);
         next(&SM_Display::sm_state_alarm_hour);
         break;
     case dUp:
+        m_Oled.write_string(0, 0, 2, (char *)"Set Alarm  ", FONT_8x8, 0, 1);
         next(&SM_Display::sm_state_toggle_alarm);
         break;
     case dDown:
+        m_Oled.write_string(0, 0, 2, (char *)"Set Alarm  ", FONT_8x8, 0, 1);
         next(&SM_Display::sm_state_set_clock);
         break;
     default:
@@ -237,20 +266,32 @@ void SM_Display::sm_state_set_clock(displayDirection direction)
     printf("Weckton aussuchen\n");
     printf("Vorlaufzeit einstellen\n");
     printf("____________\n");
+    m_Oled.write_string(0, 0, 0, (char *)"*************",FONT_8x8, 0,1);
+    m_Oled.write_string(0, 0, 1, (char *)"Toggle Alarm", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 2, (char *)"Set Alarm", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 3, (char *)">Set Clock", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 4, (char *)"Set Tone", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 5, (char *)"Set Runtime",FONT_8x8,0,1);
+    m_Oled.write_string(0, 0, 6, (char *)"Set Bringhtness",FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 7, (char *)"*************",FONT_8x8,0, 1);
     switch (direction)
     {
     case dTimeout:
     case dLeft:
+        m_Oled.fill(0,1);
         next(&SM_Display::sm_state_idle);
         break;
     case dEnter:
     case dRight:
+        m_Oled.fill(0,1);
         next(&SM_Display::sm_state_clock_hour);
         break;
     case dUp:
+        m_Oled.write_string(0, 0, 3, (char *)"Set Clock  ", FONT_8x8, 0, 1);
         next(&SM_Display::sm_state_set_alarm);
         break;
     case dDown:
+        m_Oled.write_string(0, 0, 3, (char *)"Set Clock  ", FONT_8x8, 0, 1);
         next(&SM_Display::sm_state_set_alarmtone);
         break;
     default:
@@ -358,20 +399,32 @@ void SM_Display::sm_state_set_alarmtone(displayDirection direction)
     printf("Vorlaufzeit einstellen\n");
     printf("Wecker (de)aktivieren\n");
     printf("____________\n");
+    m_Oled.write_string(0, 0, 0, (char *)"*************",FONT_8x8, 0,1);
+    m_Oled.write_string(0, 0, 1, (char *)"Toggle Alarm", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 2, (char *)"Set Alarm", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 3, (char *)"Set Clock", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 4, (char *)">Set Tone", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 5, (char *)"Set Runtime",FONT_8x8,0,1);
+    m_Oled.write_string(0, 0, 6, (char *)"Set Bringhtness",FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 7, (char *)"*************",FONT_8x8,0, 1);
     switch (direction)
     {
     case dTimeout:
     case dLeft:
+        m_Oled.fill(0,1);
         next(&SM_Display::sm_state_idle);
         break;
     case dEnter:
     case dRight:
+        m_Oled.fill(0,1);
         next(&SM_Display::sm_state_adjust_tone);
         break;
     case dUp:
+        m_Oled.write_string(0, 0, 4, (char *)"Set Tone  ", FONT_8x8, 0, 1);
         next(&SM_Display::sm_state_set_clock);
         break;
     case dDown:
+        m_Oled.write_string(0, 0, 4, (char *)"Set Tone  ", FONT_8x8, 0, 1);
         next(&SM_Display::sm_state_set_pre_runtime);
         break;
     default:
@@ -416,21 +469,33 @@ void SM_Display::sm_state_set_pre_runtime(displayDirection direction)
     printf("Wecker (de)aktivieren\n");
     printf("Wecker stellen\n");
     printf("____________\n");
+    m_Oled.write_string(0, 0, 0, (char *)"*************",FONT_8x8, 0,1);
+    m_Oled.write_string(0, 0, 1, (char *)"Toggle Alarm", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 2, (char *)"Set Alarm", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 3, (char *)"Set Clock", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 4, (char *)"Set Tone", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 5, (char *)">Set Runtime",FONT_8x8,0,1);
+    m_Oled.write_string(0, 0, 6, (char *)"Set Bringhtness",FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 7, (char *)"*************",FONT_8x8,0, 1);
     switch (direction)
     {
     case dTimeout:
     case dLeft:
+        m_Oled.fill(0,1);
         next(&SM_Display::sm_state_idle);
         break;
     case dEnter:
     case dRight:
+        m_Oled.fill(0,1);
         next(&SM_Display::sm_state_adjust_time);
         break;
     case dUp:
+        m_Oled.write_string(0, 0, 5, (char *)"Set Runtime ",FONT_8x8,0,1);
         next(&SM_Display::sm_state_set_alarmtone);
         break;
     case dDown:
-        next(&SM_Display::sm_state_toggle_alarm);
+        m_Oled.write_string(0, 0, 5, (char *)"Set Runtime ",FONT_8x8,0,1);
+        next(&SM_Display::sm_m_state_adjust_brightness);
         break;
     default:
         next(&SM_Display::sm_state_set_pre_runtime);
@@ -462,6 +527,66 @@ void SM_Display::sm_state_adjust_time(displayDirection direction)
         break;
     default:
         next(&SM_Display::sm_state_adjust_time);
+    }
+}
+void SM_Display::sm_m_state_adjust_brightness(displayDirection direction){
+    m_Oled.write_string(0, 0, 0, (char *)"*************",FONT_8x8, 0,1);
+    m_Oled.write_string(0, 0, 1, (char *)"Toggle Alarm", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 2, (char *)"Set Alarm", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 3, (char *)"Set Clock", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 4, (char *)"Set Tone", FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 5, (char *)"Set Runtime",FONT_8x8,0,1);
+    m_Oled.write_string(0, 0, 6, (char *)">Set Bringhtness",FONT_8x8, 0, 1);
+    m_Oled.write_string(0, 0, 7, (char *)"*************",FONT_8x8,0, 1);
+    switch(direction){
+        case dTimeout:
+        case dLeft:
+            m_Oled.fill(0,1);
+            next(&SM_Display::sm_state_idle);
+            break;
+        case dEnter:
+        case dRight:
+            m_Oled.fill(0,1);
+            next(&SM_Display::sm_state_adjust_brightness);
+            break;
+        case dUp:
+            m_Oled.write_string(0, 0, 6, (char *)"Set Bringhtness ",FONT_8x8,0,1);
+            next(&SM_Display::sm_state_set_pre_runtime);
+            break;
+        case dDown:
+            m_Oled.write_string(0, 0, 6, (char *)"Set Bringhtness ",FONT_8x8,0,1);
+            next(&SM_Display::sm_state_toggle_alarm);
+            break;
+        default:
+            next(&SM_Display::sm_m_state_adjust_brightness);
+
+    }
+} 
+
+void SM_Display::sm_state_adjust_brightness(displayDirection direction){
+    static int brighntess = 50;
+    m_Oled.write_string(0, 0, 1, (char *)"Toggle Alarm    ", FONT_8x8, 0, 1);
+    switch(direction){
+        case dEnter:
+        case dTimeout:
+            m_Oled.fill(0,1);
+            break;
+        case dUp:
+            if(brighntess<204)brighntess+=50;
+            m_Oled.set_contrast(brighntess);
+            next(&SM_Display::sm_state_adjust_brightness);
+            break;
+        case dDown:
+            if(brighntess>51)brighntess-=50;
+            m_Oled.set_contrast(brighntess);
+            next(&SM_Display::sm_state_adjust_brightness);
+            break;
+        case dLeft:
+            next(&SM_Display::sm_m_state_adjust_brightness);
+            break;
+        default:
+            next(&SM_Display::sm_state_adjust_brightness);
+        
     }
 }
 

@@ -68,6 +68,7 @@ target_link_libraries(SmartAlarm
         pico_multicore
         sm_display        
         core_1
+        pico_ss_oled
         )
 
 pico_add_extra_outputs(SmartAlarm)
