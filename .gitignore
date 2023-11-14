@@ -1,3 +1,4 @@
 .vscode/
 build/
 core_1/wifi_data.h
+*.code-workspace
