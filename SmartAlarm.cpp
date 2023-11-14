@@ -17,12 +17,14 @@
 #include "core_1/core_1.h"
 #define FLAG_VALUE 123
 #define JOYSTICK true
-#define DEBOUNCE_DELAY 600
+#define DEBOUNCE_DELAY_MS 600
+#define TIMEOUT_DELAY_MS 100 * 60
 #define PIN_JOYSTICK_X 26
 #define PIN_JOYSTICK_Y 27
 #define PIN_JOYSTICK_SW 22
 
-void alarm_callback(void){
+void alarm_callback(void)
+{
     printf("ALARM!!\n");
     printf("ALARM!!!\n");
     printf("ALARM!!!!\n");
@@ -44,12 +46,10 @@ displayDirection e_menu_instruction;
 #define PIN_SCK 18
 #define PIN_MOSI 19
 
-
-
 void gpio_sw_callback(uint gpio, uint32_t events)
 {
     static uint64_t u64_ts_last_input = 0;
-    if (to_ms_since_boot(get_absolute_time()) - u64_ts_last_input > DEBOUNCE_DELAY)
+    if (to_ms_since_boot(get_absolute_time()) - u64_ts_last_input > DEBOUNCE_DELAY_MS)
     {
         u64_ts_last_input = to_ms_since_boot(get_absolute_time());
         printf("ENTER\n");
@@ -57,6 +57,11 @@ void gpio_sw_callback(uint gpio, uint32_t events)
     }
 }
 
+/**
+ * @brief Get Input from Joystick
+ *
+ * @return displayDirection
+ */
 displayDirection getDirection(void)
 {
     char c_user_input;
@@ -94,15 +99,21 @@ displayDirection getDirection(void)
         // DEBUG
         // printf("Down,%d",adc_y);
     }
-    if (to_ms_since_boot(get_absolute_time()) - u64_ts_last_input > DEBOUNCE_DELAY ||
+    if (to_ms_since_boot(get_absolute_time()) - u64_ts_last_input > DEBOUNCE_DELAY_MS ||
         last_instruction != temp_insutruction)
-    {
+    {//button is debounced
         last_instruction = temp_insutruction;
         u64_ts_last_input = to_ms_since_boot(get_absolute_time());
         return temp_insutruction;
     }
+    else if (to_ms_since_boot(get_absolute_time()) - u64_ts_last_input > TIMEOUT_DELAY_MS && last_instruction == temp_insutruction)
+    {//Timout
+        temp_insutruction = dTimeout;
+        last_instruction = dTimeout;
+        return dTimeout;
+    }
     else
-    {
+    {//nothing
         temp_insutruction = dNone;
         return temp_insutruction;
     }
@@ -192,7 +203,8 @@ int main()
     /**template for future queue implementation*/
     // queue_init(&q_date_time,sizeof(dt),1);
     sleep_ms(5000);
-    if(fsm_display.sm_set_callback((void *) &alarm_callback)!=0)printf("cant set Nullptr \n");
+    if (fsm_display.sm_set_callback((void *)&alarm_callback) != 0)
+        printf("cant set Nullptr \n");
     multicore_launch_core1(core1_entry);
     printf("c0: started core1\n");
     while (1)
