@@ -11,6 +11,7 @@
 #include "hardware/gpio.h"
 #include "pico/util/datetime.h"
 #include "libs/sm_display/sm_display.h"
+#include "libs/rgb_lights/rgb_lights.h"
 
 #include "pico/util/queue.h"
 #include "pico/multicore.h"
@@ -18,7 +19,7 @@
 #define FLAG_VALUE 123
 #define JOYSTICK true
 #define DEBOUNCE_DELAY_MS 600
-#define TIMEOUT_DELAY_MS 100 * 60
+#define TIMEOUT_DELAY_MS 20 * 60
 #define PIN_JOYSTICK_X 26
 #define PIN_JOYSTICK_Y 27
 #define PIN_JOYSTICK_SW 22
@@ -73,6 +74,8 @@ displayDirection getDirection(void)
     uint adc_x = adc_read();
     adc_select_input(1);
     uint adc_y = adc_read();
+    printf("x:%d",adc_x);
+    printf("y:%d",adc_y);
     adc_x /= 500;
     adc_y /= 500;
     if (adc_x < 3)
@@ -93,7 +96,7 @@ displayDirection getDirection(void)
         // DEBUG
         // printf("Up,%d",adc_y);
     }
-    else if (adc_y > 5)
+    else if (adc_y >6)
     {
         temp_insutruction = dDown;
         // DEBUG
@@ -106,10 +109,11 @@ displayDirection getDirection(void)
         u64_ts_last_input = to_ms_since_boot(get_absolute_time());
         return temp_insutruction;
     }
-    else if (to_ms_since_boot(get_absolute_time()) - u64_ts_last_input > TIMEOUT_DELAY_MS && last_instruction == temp_insutruction)
-    {//Timout
+    if (to_ms_since_boot(get_absolute_time()) - u64_ts_last_input > TIMEOUT_DELAY_MS && last_instruction == temp_insutruction)
+    {//Timout //TODO: fix Timeout
         temp_insutruction = dTimeout;
         last_instruction = dTimeout;
+        printf("Timeout...\n");
         return dTimeout;
     }
     else
@@ -183,6 +187,7 @@ int main()
 {
     stdio_init_all();
     adc_init();
+    setup_pio();
     adc_gpio_init(PIN_JOYSTICK_X);
     adc_gpio_init(PIN_JOYSTICK_Y);
     gpio_set_dir(PIN_JOYSTICK_SW, false);
@@ -202,7 +207,7 @@ int main()
     // gpio_put(PIN_CS, 1);
     /**template for future queue implementation*/
     // queue_init(&q_date_time,sizeof(dt),1);
-    sleep_ms(5000);
+    sleep_ms(500);
     if (fsm_display.sm_set_callback((void *)&alarm_callback) != 0)
         printf("cant set Nullptr \n");
     multicore_launch_core1(core1_entry);
@@ -212,6 +217,7 @@ int main()
         sleep_ms(100);
         e_menu_instruction = getDirection();
         fsm_display.run(e_menu_instruction);
+        set_ring();
         // check_rtc();
     }
     return 0;

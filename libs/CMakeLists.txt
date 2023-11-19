@@ -4,3 +4,7 @@ add_subdirectory(
 add_subdirectory(
   ./pi-pico-ss-oled/pico-ss-oled
 )
+
+add_subdirectory(
+  ./rgb_lights
+)

@@ -26,7 +26,7 @@ pico_sdk_init()
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(SmartAlarm SmartAlarm.cpp)
-pico_generate_pio_header(SmartAlarm ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio)
+
 pico_set_program_name(SmartAlarm "SmartAlarm")
 pico_set_program_version(SmartAlarm "0.1")
 
@@ -69,6 +69,7 @@ target_link_libraries(SmartAlarm
         sm_display        
         core_1
         pico_ss_oled
+        rgb_lights
         )
 
 pico_add_extra_outputs(SmartAlarm)
