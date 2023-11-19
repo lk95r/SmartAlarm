@@ -88,20 +88,37 @@ void SM_Display::sm_state_init(displayDirection direction)
  */
 void SM_Display::sm_state_idle(displayDirection direction)
 {
-
+    static uint32_t u32_display_hour =0;
+    static uint32_t u32_display_min=0;
+    char time[5];
+    char temperature[4];
+    char humidity[7];
     if (rtc_running())
     {
         printf("State: Idle \n");
         rtc_get_datetime(&m_dt);
+        //if(m_dt.hour != u32_display_hour || m_dt.min != u32_display_min){ //TODO: fix displaying time also when moving to idle from different state;
+        //    m_Oled.fill(0,1);
+            sprintf(time,"%2d:%2d",m_dt.hour,m_dt.min);
+            sprintf(temperature,"%2dC",25);
+            sprintf(humidity,"%2d%rHs",99);
+            m_Oled.write_string(0,0,2,(char *)time,FONT_LARGE,0,1);
+            m_Oled.write_string(0,0,0,(char *)temperature,FONT_8x8,0,1);
+            m_Oled.write_string(0,0,1,(char *)humidity,FONT_8x8,0,1);
+        //    u32_display_hour=m_dt.hour;
+        //    u32_display_min=m_dt.min;
+        //}
         printf("%d:%d:%d\n", m_dt.hour, m_dt.min, m_dt.sec);
     }
     switch (direction)
     {
     case dUp:
+        m_Oled.fill(0,1);
         next(&SM_Display::sm_m_state_adjust_brightness);
         break;
     case dEnter:
     case dDown:
+        m_Oled.fill(0,1);
         next(&SM_Display::sm_state_toggle_alarm);
         break;
     default:
@@ -222,7 +239,11 @@ void SM_Display::sm_state_set_alarm(displayDirection direction)
  */
 void SM_Display::sm_state_alarm_hour(displayDirection direction)
 {
-    static int temp_h = 6;
+    static int temp_h = 12;
+    char display_time[5];
+    sprintf(display_time,"%2d:%2d",temp_h,m_alarm_time.min);
+    m_Oled.write_string(0,0,2,(char *)display_time,FONT_LARGE,0,1);
+    m_Oled.write_string(0,0,5,(char *)"__",FONT_16x16,0,1);
     printf("state: set alarm_h = %d\n", temp_h);
 
     switch (direction)
@@ -234,6 +255,7 @@ void SM_Display::sm_state_alarm_hour(displayDirection direction)
     case dEnter:
         m_alarm_time.hour = temp_h;
         rtc_set_alarm(&m_alarm_time,(rtc_callback_t )ptr_alarm_callback); //TODO: incorporate pre runtime
+        m_Oled.fill(0,1);
         next(&SM_Display::sm_state_idle);
         break;
     case dUp:
@@ -252,6 +274,7 @@ void SM_Display::sm_state_alarm_hour(displayDirection direction)
         next(&SM_Display::sm_state_alarm_hour);
         break;
     case dLeft:
+        m_Oled.fill(0,1);
         next(&SM_Display::sm_state_set_alarm);
         break;
     case dRight:
@@ -271,6 +294,10 @@ void SM_Display::sm_state_alarm_hour(displayDirection direction)
 void SM_Display::sm_state_alarm_min(displayDirection direction)
 {
     static int temp_min = 6;
+    char display_time[5];
+    sprintf(display_time,"%2d:%2d",m_alarm_time.hour,temp_min);
+    m_Oled.write_string(0,0,2,(char *)display_time,FONT_LARGE,0,1);
+    m_Oled.write_string(0,48,5,(char *)"__",FONT_16x16,0,1);
     printf("state: set alarm_min = %d\n", temp_min);
     switch (direction)
     {
@@ -281,6 +308,7 @@ void SM_Display::sm_state_alarm_min(displayDirection direction)
     case dEnter:
         m_alarm_time.min = temp_min;
         rtc_set_alarm(&m_alarm_time,(rtc_callback_t)ptr_alarm_callback); //TODO: incorporate pre runtime
+        m_Oled.fill(0,1);
         next(&SM_Display::sm_state_idle);
         break;
     case dUp:
@@ -299,6 +327,7 @@ void SM_Display::sm_state_alarm_min(displayDirection direction)
         next(&SM_Display::sm_state_alarm_min);
         break;
     case dLeft:
+        m_Oled.fill(0,1);
         m_alarm_time.min = temp_min;
         next(&SM_Display::sm_state_alarm_hour);
         break;
@@ -361,8 +390,15 @@ void SM_Display::sm_state_set_clock(displayDirection direction)
  */
 void SM_Display::sm_state_clock_hour(displayDirection direction)
 {
-    static int temp_h = 6;
+    static int temp_h = 99;
+    char display_time[5];
     printf("state: set clock_h = %d\n", temp_h);
+    if(temp_h==99 && rtc_running()){
+        temp_h = m_dt.hour;
+    }
+    sprintf(display_time,"%2d:%2d",temp_h,m_dt.min);
+    m_Oled.write_string(0,0,2,(char *)display_time,FONT_LARGE,0,1);
+    m_Oled.write_string(0,0,5,(char *)"__",FONT_16x16,0,1);
     switch (direction)
     {
     case dTimeout:
@@ -395,6 +431,7 @@ void SM_Display::sm_state_clock_hour(displayDirection direction)
         next(&SM_Display::sm_state_clock_hour);
         break;
     case dLeft:
+        m_Oled.fill(0,1);
         m_dt.hour = temp_h;
         next(&SM_Display::sm_state_set_clock);
         break;
@@ -404,6 +441,7 @@ void SM_Display::sm_state_clock_hour(displayDirection direction)
             rtc_get_datetime(&m_dt);
         }
         m_dt.hour = temp_h;
+        m_Oled.fill(0,1);
         next(&SM_Display::sm_state_clock_min);
         break;
     default:
@@ -418,7 +456,15 @@ void SM_Display::sm_state_clock_hour(displayDirection direction)
  */
 void SM_Display::sm_state_clock_min(displayDirection direction)
 {
-    static int temp_min = 6;
+    static int temp_min = 99;
+    char display_time[5];
+    printf("state: set clock_h = %d\n", temp_min);
+    if(temp_min==99 && rtc_running()){
+        temp_min = m_dt.min;
+    }
+    sprintf(display_time,"%2d:%2d",m_dt.hour,temp_min);
+    m_Oled.write_string(0,0,2,(char *)display_time,FONT_LARGE,0,1);
+    m_Oled.write_string(0,48,5,(char *)"__",FONT_16x16,0,1);
     printf("state: set clock_min = %d\n", temp_min);
     switch (direction)
     {
@@ -448,6 +494,7 @@ void SM_Display::sm_state_clock_min(displayDirection direction)
         next(&SM_Display::sm_state_clock_min);
         break;
     case dLeft:
+    m_Oled.fill(0,1);
         next(&SM_Display::sm_state_clock_hour);
         break;
     default:
@@ -510,6 +557,9 @@ void SM_Display::sm_state_set_alarmtone(displayDirection direction)
 void SM_Display::sm_state_adjust_tone(displayDirection direction)
 {
     static int tone_nr = 0;
+    char str_tone[2];
+    sprintf(str_tone,"%2d",tone_nr);
+    m_Oled.write_string(0,0,1,str_tone,FONT_LARGE,0,1);
     printf("Sound %d\n", tone_nr);
     switch (direction)
     {
@@ -524,10 +574,12 @@ void SM_Display::sm_state_adjust_tone(displayDirection direction)
         break;
     case dUp:
         tone_nr++;
+        m_Oled.fill(0,1);
         next(&SM_Display::sm_state_adjust_tone);
         break;
     case dDown:
         tone_nr--;
+        m_Oled.fill(0,1);
         next(&SM_Display::sm_state_adjust_tone);
         break;
     default:
@@ -590,6 +642,9 @@ void SM_Display::sm_state_set_pre_runtime(displayDirection direction)
 void SM_Display::sm_state_adjust_time(displayDirection direction)
 {
     static int duration_min = 0;
+    char str_time[3];
+    sprintf(str_time,"%3d",duration_min);
+    m_Oled.write_string(0,0,1,str_time,FONT_LARGE,0,1);
     printf(" %d min\n", duration_min);
     switch (direction)
     {
@@ -603,10 +658,12 @@ void SM_Display::sm_state_adjust_time(displayDirection direction)
         next(&SM_Display::sm_state_set_pre_runtime);
         break;
     case dUp:
+        m_Oled.fill(0,1);
         duration_min++;
         next(&SM_Display::sm_state_adjust_time);
         break;
     case dDown:
+        m_Oled.fill(0,1);
         duration_min--;
         next(&SM_Display::sm_state_adjust_time);
         break;
@@ -661,7 +718,9 @@ void SM_Display::sm_m_state_adjust_brightness(displayDirection direction){
  */
 void SM_Display::sm_state_adjust_brightness(displayDirection direction){
     static int brighntess = 50;
-    m_Oled.write_string(0, 0, 1, (char *)"Toggle Alarm    ", FONT_8x8, 0, 1);
+    char str_brightness[3];
+    sprintf(str_brightness,"%3d",brighntess);
+    m_Oled.write_string(0, 0, 1,str_brightness, FONT_LARGE, 0, 1);
     switch(direction){
         case dEnter:
         case dTimeout:
@@ -669,11 +728,13 @@ void SM_Display::sm_state_adjust_brightness(displayDirection direction){
             break;
         case dUp:
             if(brighntess<204)brighntess+=50;
+            m_Oled.fill(0,1);
             m_Oled.set_contrast(brighntess);
             next(&SM_Display::sm_state_adjust_brightness);
             break;
         case dDown:
             if(brighntess>51)brighntess-=50;
+            m_Oled.fill(0,1);
             m_Oled.set_contrast(brighntess);
             next(&SM_Display::sm_state_adjust_brightness);
             break;
@@ -706,6 +767,11 @@ void SM_Display::sm_state_on(displayDirection direction)
         printf("next: stay on \n");
     }
     return;
+}
+void SM_Display::draw_triangle(triangle_t triangle){ //TODO: fix this
+    m_Oled.draw_line(triangle.p1.x,triangle.p1.y,triangle.p2.x,triangle.p2.y,0);
+    m_Oled.draw_line(triangle.p2.x,triangle.p2.y,triangle.p3.x,triangle.p3.y,0);
+    m_Oled.draw_line(triangle.p3.x,triangle.p3.y,triangle.p1.x,triangle.p1.y,0);
 }
 
 /**

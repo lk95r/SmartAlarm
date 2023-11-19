@@ -15,6 +15,17 @@
 #define OLED_WIDTH 128
 #define OLED_HEIGHT 64
 
+typedef struct{
+    int x;
+    int y;
+}coordinate_t;
+
+typedef struct{
+    coordinate_t p1;
+    coordinate_t p2;
+    coordinate_t p3;
+}triangle_t;
+
 enum displayDirection {
     dNone,
     dUp,
@@ -36,6 +47,12 @@ class SM_Display{
         bool m_alarm_active=false; //false when alarm is inactive, true when active
         void* ptr_alarm_callback;
         picoSSOLED m_Oled{OLED_128x64, 0x3c, 0, 0, PICO_I2C, SDA_PIN, SCL_PIN, I2C_SPEED};
+        triangle_t tri_hour_top{
+            .p1={16,0},
+            .p2={100,30},
+            .p3={16,30}
+        };
+        triangle_t tri_min_top;
 
 
         void (SM_Display:: *next_function)(displayDirection);
@@ -52,6 +69,8 @@ class SM_Display{
         void sm_state_on(displayDirection direction); //deprecated
         void sm_state_off(displayDirection direction); //deprecated
         void test_print(void){printf("Test Print sm_display\n");return;}; 
+
+        void draw_triangle(triangle_t triangle);
 };  
 
 
