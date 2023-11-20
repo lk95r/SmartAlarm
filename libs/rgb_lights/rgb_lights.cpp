@@ -36,15 +36,13 @@ void setup_pio(void)
     ws2812_program_init(pio, sm, offset, PIN_TX, 800000, false);
 }
 
-void set_ring(void)
+void set_ring(uint8_t r, uint8_t g, uint8_t b)
 {
-    for(int j = 0;j<25;j++)
-    {
+
     for (int i = 0; i < STRING_LEN; i++)
     {
-        put_pixel(urgb_u32(10*j, 2*j, 5*j));
+        put_pixel(urgb_u32(r, g, b));
         
     }
-        sleep_ms(200);
-    }
+
 }

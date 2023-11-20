@@ -12,6 +12,7 @@
 #include "pico/util/datetime.h"
 #include "libs/sm_display/sm_display.h"
 #include "libs/rgb_lights/rgb_lights.h"
+#include "libs/bme_280/bme_280.h"
 
 #include "pico/util/queue.h"
 #include "pico/multicore.h"
@@ -36,6 +37,7 @@ datetime_t dt;
 bool error;
 SM_Display fsm_display;
 volatile bool sw_triggered = false;
+BME280 bme;
 
 displayDirection e_menu_instruction;
 // SPI Defines
@@ -194,6 +196,10 @@ int main()
     gpio_set_input_enabled(PIN_JOYSTICK_SW, true);
     gpio_set_pulls(PIN_JOYSTICK_SW, true, false);
     gpio_set_irq_enabled_with_callback(PIN_JOYSTICK_SW, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_sw_callback);
+    sleep_ms(20);
+    bme.init((void *) i2c0, 100*1000, BME280_I2C_ADDR_PRIM,21, 20);//BME280_I2C_ADDR_PRIM
+    //bme.init((void *) i2c1, 100*1000, BME280_I2C_ADDR_SEC,19, 18);
+    bme.test_device_id();
     printf("c0: started\n");
     // SPI initialisation. This example will use SPI at 1MHz.
     // spi_init(SPI_PORT, 1000*1000);
@@ -215,9 +221,10 @@ int main()
     while (1)
     {
         sleep_ms(100);
+        bme.test_device_id();
         e_menu_instruction = getDirection();
         fsm_display.run(e_menu_instruction);
-        set_ring();
+        set_ring(00,56,78);
         // check_rtc();
     }
     return 0;

@@ -8,3 +8,7 @@ add_subdirectory(
 add_subdirectory(
   ./rgb_lights
 )
+
+add_subdirectory(
+  ./bme_280
+)
