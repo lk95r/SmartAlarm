@@ -42,8 +42,54 @@ uint BME280::init(void* i2c, uint baudrate, uint i2c_address,uint pin_scl, uint 
 
     // Add a delay after I2C initialization
     sleep_ms(100);
-
+    get_calib_data();
     return retval;
+}
+
+void BME280::get_calib_data(void){
+    uint8_t calib_data[BME280_LEN_TEMP_PRESS_CALIB_DATA]={0};
+    uint8_t tx_buffer[1] = {BME280_REG_TEMP_PRESS_CALIB_DATA};
+    int error_code;
+    error_code= i2c_write_blocking((i2c_inst_t *)m_i2c_inst,m_i2c_address,tx_buffer,1,true);
+    error_code = i2c_read_blocking((i2c_inst_t *)m_i2c_inst,m_i2c_address,calib_data,BME280_LEN_TEMP_PRESS_CALIB_DATA,false);
+    parse_temp_pres_calib_data(calib_data,BME280_LEN_TEMP_PRESS_CALIB_DATA);
+    memset(calib_data,BME280_LEN_TEMP_PRESS_CALIB_DATA,0);
+    tx_buffer[0]=BME280_REG_HUMIDITY_CALIB_DATA;
+    error_code = i2c_write_blocking((i2c_inst_t *)m_i2c_inst,m_i2c_address,tx_buffer,1,true);
+    error_code = i2c_read_blocking((i2c_inst_t *)m_i2c_inst,m_i2c_address,calib_data,BME280_LEN_HUMIDITY_CALIB_DATA,false);
+    parse_hum_calib_data(calib_data,BME280_LEN_HUMIDITY_CALIB_DATA);
+}
+
+void BME280::parse_temp_pres_calib_data(uint8_t * calib_data,uint8_t size){
+ 
+    this->m_cal_values.dig_t1 = ((calib_data[1]<<8)|calib_data[0]);
+    this->m_cal_values.dig_t2 = ((calib_data[3]<<8)|calib_data[2]);
+    this->m_cal_values.dig_t3 = ((calib_data[5]<<8)|calib_data[4]);
+    this->m_cal_values.dig_p1 = ((calib_data[7]<<8)|calib_data[6]);
+    this->m_cal_values.dig_p2 = ((calib_data[9]<<8)|calib_data[8]);
+    this->m_cal_values.dig_p3 = ((calib_data[11]<<8)|calib_data[10]);
+    this->m_cal_values.dig_p4 = ((calib_data[13]<<8)|calib_data[12]);
+    this->m_cal_values.dig_p5 = ((calib_data[15]<<8)|calib_data[14]);
+    this->m_cal_values.dig_p6 = ((calib_data[17]<<8)|calib_data[16]);
+    this->m_cal_values.dig_p7 = ((calib_data[19]<<8)|calib_data[18]);
+    this->m_cal_values.dig_p8 = ((calib_data[21]<<8)|calib_data[20]);
+    this->m_cal_values.dig_p9 = ((calib_data[23]<<8)|calib_data[22]);
+    this->m_cal_values.dig_h1=calib_data[25];
+
+
+    printf("%d",this->m_cal_values.dig_t3);
+}
+
+void BME280::parse_hum_calib_data(uint8_t* calib_data,uint8_t size){
+    int16_t dig_h4_lsb;
+    int16_t dig_h4_msb;
+    int16_t dig_h5_lsb;
+    int16_t dig_h5_msb;
+    this->m_cal_values.dig_h2 = ((calib_data[1]<<8)|calib_data[0]);
+    this->m_cal_values.dig_h3 = calib_data[2];
+
+
+
 }
 
 uint BME280::test_device_id(void){

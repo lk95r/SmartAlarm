@@ -36,6 +36,18 @@
 * @version    v3.5.1
 *
 */
+
+/*! @name API success code */
+#define BME280_OK                                 INT8_C(0)
+
+/*! @name API error codes */
+#define BME280_E_NULL_PTR                         INT8_C(-1)
+#define BME280_E_COMM_FAIL                        INT8_C(-2)
+#define BME280_E_INVALID_LEN                      INT8_C(-3)
+#define BME280_E_DEV_NOT_FOUND                    INT8_C(-4)
+#define BME280_E_SLEEP_MODE_FAIL                  INT8_C(-5)
+#define BME280_E_NVM_COPY_FAILED                  INT8_C(-6)
+
 /*! @name BME280 chip identifier */
 #define BME280_CHIP_ID                            UINT8_C(0x60)
 
@@ -73,3 +85,63 @@
 
 #define BME280_STATUS_IM_UPDATE                   UINT8_C(0x01)
 #define BME280_STATUS_MEAS_DONE                   UINT8_C(0x08)
+
+struct bme280_calib_data
+{
+    /*! Calibration coefficient for the temperature sensor */
+    uint16_t dig_t1;
+
+    /*! Calibration coefficient for the temperature sensor */
+    int16_t dig_t2;
+
+    /*! Calibration coefficient for the temperature sensor */
+    int16_t dig_t3;
+
+    /*! Calibration coefficient for the pressure sensor */
+    uint16_t dig_p1;
+
+    /*! Calibration coefficient for the pressure sensor */
+    int16_t dig_p2;
+
+    /*! Calibration coefficient for the pressure sensor */
+    int16_t dig_p3;
+
+    /*! Calibration coefficient for the pressure sensor */
+    int16_t dig_p4;
+
+    /*! Calibration coefficient for the pressure sensor */
+    int16_t dig_p5;
+
+    /*! Calibration coefficient for the pressure sensor */
+    int16_t dig_p6;
+
+    /*! Calibration coefficient for the pressure sensor */
+    int16_t dig_p7;
+
+    /*! Calibration coefficient for the pressure sensor */
+    int16_t dig_p8;
+
+    /*! Calibration coefficient for the pressure sensor */
+    int16_t dig_p9;
+
+    /*! Calibration coefficient for the humidity sensor */
+    uint8_t dig_h1;
+
+    /*! Calibration coefficient for the humidity sensor */
+    int16_t dig_h2;
+
+    /*! Calibration coefficient for the humidity sensor */
+    uint8_t dig_h3;
+
+    /*! Calibration coefficient for the humidity sensor */
+    int16_t dig_h4;
+
+    /*! Calibration coefficient for the humidity sensor */
+    int16_t dig_h5;
+
+    /*! Calibration coefficient for the humidity sensor */
+    int8_t dig_h6;
+
+    /*! Variable to store the intermediate temperature coefficient */
+    int32_t t_fine;
+};
