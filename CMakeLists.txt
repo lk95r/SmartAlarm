@@ -66,6 +66,7 @@ target_link_libraries(SmartAlarm
         hardware_adc
         hardware_gpio
         pico_multicore
+        pico_sync
         sm_display        
         core_1
         pico_ss_oled

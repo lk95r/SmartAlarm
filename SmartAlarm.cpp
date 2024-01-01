@@ -17,6 +17,7 @@
 #include "libs/globals/globals.h"
 
 #include "pico/util/queue.h"
+#include "pico/mutex.h"
 #include "pico/multicore.h"
 #include "core_1/core_1.h"
 #define FLAG_VALUE 123
@@ -36,6 +37,7 @@ void alarm_callback(void)
 
 extern queue_t q_date_time;
 sram_t sram;
+mutex_t mut_sram;
 datetime_t dt;
 bool error;
 SM_Display fsm_display;
