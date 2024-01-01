@@ -12,7 +12,7 @@ pico_multicore
 hardware_pio
 hardware_clocks
 hardware_gpio
-
+globals
 )
 
 target_include_directories(rgb_lights PUBLIC ${CMAKE_CURRENT_LIST_DIR})

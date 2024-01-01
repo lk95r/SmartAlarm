@@ -12,3 +12,7 @@ add_subdirectory(
 add_subdirectory(
   ./bme_280
 )
+
+add_subdirectory(
+  ./globals
+)

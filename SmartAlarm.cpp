@@ -10,9 +10,11 @@
 #include "hardware/adc.h"
 #include "hardware/gpio.h"
 #include "pico/util/datetime.h"
+
 #include "libs/sm_display/sm_display.h"
 #include "libs/rgb_lights/rgb_lights.h"
 #include "libs/bme_280/bme_280.h"
+#include "libs/globals/globals.h"
 
 #include "pico/util/queue.h"
 #include "pico/multicore.h"
@@ -33,6 +35,7 @@ void alarm_callback(void)
 }
 
 extern queue_t q_date_time;
+sram_t sram;
 datetime_t dt;
 bool error;
 SM_Display fsm_display;

@@ -13,6 +13,7 @@ hardware_pio
 hardware_clocks
 hardware_gpio
 hardware_i2c
+globals
 )
 
 target_include_directories(bme_280 PUBLIC ${CMAKE_CURRENT_LIST_DIR})

@@ -71,6 +71,7 @@ target_link_libraries(SmartAlarm
         pico_ss_oled
         rgb_lights
         bme_280
+        globals
         )
 
 pico_add_extra_outputs(SmartAlarm)
