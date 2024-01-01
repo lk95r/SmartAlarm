@@ -9,4 +9,6 @@ pico_multicore
 hardware_rtc
 hardware_adc
 pico_ss_oled
+globals
+pico_sync
 )
