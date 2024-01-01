@@ -8,6 +8,8 @@ pico_multicore
 hardware_rtc
 pico_ss_oled
 globals
+dfplayer
+bme280
 )
 
 target_include_directories(sm_display PUBLIC ${CMAKE_CURRENT_LIST_DIR})

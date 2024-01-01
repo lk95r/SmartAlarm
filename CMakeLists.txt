@@ -65,6 +65,7 @@ target_link_libraries(SmartAlarm
         hardware_rtc
         hardware_adc
         hardware_gpio
+        hardware_uart
         pico_multicore
         pico_sync
         sm_display        
@@ -73,6 +74,7 @@ target_link_libraries(SmartAlarm
         rgb_lights
         bme_280
         globals
+        dfplayer
         )
 
 pico_add_extra_outputs(SmartAlarm)
