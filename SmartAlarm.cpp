@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include "pico/stdlib.h"
+
 #include "hardware/spi.h"
 #include "hardware/pio.h"
 #include "hardware/interp.h"
@@ -13,8 +12,8 @@
 
 #include "libs/sm_display/sm_display.h"
 #include "libs/rgb_lights/rgb_lights.h"
-#include "libs/bme_280/bme_280.h"
-#include "libs/globals/globals.h"
+#include "bme_280.h"
+#include "globals.h"
 
 #include "pico/util/queue.h"
 #include "pico/mutex.h"
@@ -43,6 +42,7 @@ bool error;
 SM_Display fsm_display;
 volatile bool sw_triggered = false;
 BME280 bme;
+DFP dfp;
 
 displayDirection e_menu_instruction;
 // SPI Defines

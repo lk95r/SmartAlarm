@@ -5,6 +5,7 @@
 #include "sm_display.h"
 
 
+
 /**
  * @brief Construct a new sm display::sm display object as a state machine
  * and initializes m_Oled object

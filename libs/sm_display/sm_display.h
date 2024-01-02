@@ -6,6 +6,8 @@
 #include "pico/util/datetime.h"
 
 #include "ss_oled.hpp"
+#include "globals.h"
+
 //Defines OLED for pico ss oled
 #define SDA_PIN 6
 #define SCL_PIN 7

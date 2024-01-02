@@ -4,7 +4,7 @@ DFP::DFP(void){
 
 };
 
-int8_t DFP::init(uart_inst_t* uart_inst = uart1,int tx_pin=8,int rx_pin=9,int baudrate = 9600){
+int8_t DFP::init(uart_inst_t* uart_inst,int tx_pin,int rx_pin,int baudrate){
     //TODO: Set GPIO FUNC to uart
     gpio_set_function(tx_pin,GPIO_FUNC_UART);
     gpio_set_function(rx_pin,GPIO_FUNC_UART);

@@ -10,6 +10,7 @@ hardware_uart
 pico_ss_oled
 bme_280
 pico_sync
+globals
 )
 
 target_include_directories(dfplayer PUBLIC ${CMAKE_CURRENT_LIST_DIR})

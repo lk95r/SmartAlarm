@@ -50,6 +50,9 @@ target_include_directories(SmartAlarm PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
   ${CMAKE_CURRENT_LIST_DIR}/libs/sm_display 
   ${CMAKE_CURRENT_LIST_DIR}/core_1
+  ${CMAKE_CURRENT_LIST_DIR}/libs/globals 
+  ${CMAKE_CURRENT_LIST_DIR}/libs/bme_280
+  ${CMAKE_CURRENT_LIST_DIR}/libs/dfplayer
 )
 
 
@@ -68,12 +71,12 @@ target_link_libraries(SmartAlarm
         hardware_uart
         pico_multicore
         pico_sync
+        globals
         sm_display        
         core_1
         pico_ss_oled
         rgb_lights
         bme_280
-        globals
         dfplayer
         )
 
