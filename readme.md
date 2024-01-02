@@ -1,4 +1,6 @@
-#Build log:
+# Build log:
+
+
 [main] Building folder: SmartAlarm 
 [build] Starting build
 [proc] Executing command: "C:\Program Files\Raspberry Pi\Pico SDK v1.5.1\cmake\bin\cmake.EXE" --build c:/Users/Lennard/Documents/Pico_Projects/SmartAlarm/build --config Debug --target all --
