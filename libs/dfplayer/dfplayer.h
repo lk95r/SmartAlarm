@@ -24,7 +24,7 @@ class DFP{
      * @return int8_t 0: success
      * @return int8_t -1: failed to send: set track
      */
-    int8_t DFP::set_track(int16_t no);
+    int8_t set_track(int16_t no);
 
     /**
      * @brief plays selected song from sd-card

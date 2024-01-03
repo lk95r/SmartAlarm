@@ -42,10 +42,13 @@ class SM_Display{
     public:
         SM_Display();
         int sm_set_callback(void* callback);
+        uint16_t get_duration_min(void);
+        datetime_t get_alarm_time(void);
         void run(displayDirection);
     private:
         datetime_t m_dt;
         datetime_t m_alarm_time;
+        uint16_t duration_min = 0;
         bool m_alarm_active=false; //false when alarm is inactive, true when active
         void* ptr_alarm_callback;
         picoSSOLED m_Oled{OLED_128x64, 0x3c, 0, 0, PICO_I2C, SDA_PIN, SCL_PIN, I2C_SPEED};
@@ -54,7 +57,7 @@ class SM_Display{
             .p2={100,30},
             .p3={16,30}
         };
-        triangle_t tri_min_top;
+        triangle_t tri_min_top; //TODO: enable display of shapes
 
 
         void (SM_Display:: *next_function)(displayDirection);
