@@ -18,14 +18,21 @@ class DFP{
     int8_t init(uart_inst_t* uart_inst = uart1,int tx_pin=8,int rx_pin=9,int baudrate = 9600);
 
     /**
-     * @brief plays song from sd-card
+     * @brief chooses track to play from sd-card
      * 
      * @param no number of song
      * @return int8_t 0: success
-     * @return int8_t -1: failed to send: load track
-     * @return int8_t -2: failed to send: play sound
+     * @return int8_t -1: failed to send: set track
      */
-    int8_t play(int16_t no);
+    int8_t DFP::set_track(int16_t no);
+
+    /**
+     * @brief plays selected song from sd-card
+     * 
+     * @return int8_t 0: success
+     * @return int8_t -1: failed to send: play sound
+     */
+    int8_t play(void);
 
     /**
      * @brief pauses audio

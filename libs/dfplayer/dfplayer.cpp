@@ -16,7 +16,7 @@ int8_t DFP::init(uart_inst_t* uart_inst,int tx_pin,int rx_pin,int baudrate){
     return 0;
 };
 
-int8_t DFP::play(int16_t no){
+int8_t DFP::set_track(int16_t no){
     for(int i=0;i<DFP_DEFAULT_MSG_LEN;i++){ //TODO: use memset, seemed to be unavailable in lib
         this->tx_buffer[i]=0;
     }
@@ -25,12 +25,18 @@ int8_t DFP::play(int16_t no){
     this->tx_buffer[6]=(uint8_t)(no&0xFF);      //low Byte
     m_calculate_checksum();
     if(m_send_cmd()!=0)return -1;
-    sleep_ms(10);
+    return 0;
+}
+
+int8_t DFP::play(void){
+    for(int i=0;i<DFP_DEFAULT_MSG_LEN;i++){ //TODO: use memset, seemed to be unavailable in lib
+        this->tx_buffer[i]=0;
+    }
     this->tx_buffer[3]=CMD_PLAYBACK;
     this->tx_buffer[5]=0;
     this->tx_buffer[6]=0;
     m_calculate_checksum();
-    if(m_send_cmd()!=0)return -2;
+    if(m_send_cmd()!=0)return -1;
     return 0;
 }
 
