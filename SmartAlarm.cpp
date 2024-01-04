@@ -134,7 +134,7 @@ void gpio_sw_callback(uint gpio, uint32_t events)
  *
  * @return displayDirection
  */
-displayDirection getDirection(void)
+displayDirection getInput(void)
 {
     char c_user_input;
     displayDirection temp_insutruction = dNone;
@@ -291,7 +291,7 @@ int main()
     {
         sleep_ms(100);
         bme.test_device_id();
-        e_menu_instruction = getDirection();
+        e_menu_instruction = getInput();
         fsm_display.run(e_menu_instruction);
         set_ring(00, 56, 78);
         // check_rtc();
