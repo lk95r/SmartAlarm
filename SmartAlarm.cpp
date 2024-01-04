@@ -38,6 +38,7 @@ bool error;
 SM_Display fsm_display;
 volatile bool sw_triggered = false;
 BME280 bme;
+int32_t g_sens_temperature;
 
 displayDirection e_menu_instruction;
 // SPI Defines
@@ -76,8 +77,8 @@ displayDirection getDirection(void)
     uint adc_x = adc_read();
     adc_select_input(1);
     uint adc_y = adc_read();
-    printf("x:%d",adc_x);
-    printf("y:%d",adc_y);
+    printf("x:%d\t",adc_x);
+    printf("y:%d\n",adc_y);
     adc_x /= 500;
     adc_y /= 500;
     if (adc_x < 3)
@@ -200,6 +201,8 @@ int main()
     bme.init((void *) i2c0, 100*1000, BME280_I2C_ADDR_PRIM,21, 20);//BME280_I2C_ADDR_PRIM
     //bme.init((void *) i2c1, 100*1000, BME280_I2C_ADDR_SEC,19, 18);
     bme.test_device_id();
+    sleep_ms(500);
+    g_sens_temperature = bme.get_temperature();
     printf("c0: started\n");
     // SPI initialisation. This example will use SPI at 1MHz.
     // spi_init(SPI_PORT, 1000*1000);
@@ -222,6 +225,8 @@ int main()
     {
         sleep_ms(100);
         bme.test_device_id();
+        g_sens_temperature=bme.get_temperature();
+        printf("%.2fC\n",(float)g_sens_temperature/100);
         e_menu_instruction = getDirection();
         fsm_display.run(e_menu_instruction);
         set_ring(00,56,78);
