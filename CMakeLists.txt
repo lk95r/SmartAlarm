@@ -77,8 +77,10 @@ target_link_libraries(SmartAlarm
         core_1
         pico_ss_oled
         rgb_lights
-        bme_280
+        #bme_280
         dfplayer
+        sensor_bme280
+        callbacks_blocking
         )
 
 pico_add_extra_outputs(SmartAlarm)

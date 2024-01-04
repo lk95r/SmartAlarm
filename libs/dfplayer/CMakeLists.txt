@@ -8,7 +8,6 @@ pico_multicore
 hardware_rtc
 hardware_uart
 pico_ss_oled
-bme_280
 pico_sync
 globals
 )

@@ -12,13 +12,17 @@
 
 #include "libs/sm_display/sm_display.h"
 #include "libs/rgb_lights/rgb_lights.h"
-#include "bme_280.h"
+// #include "bme_280.h"
 #include "globals.h"
 
 #include "pico/util/queue.h"
 #include "pico/mutex.h"
 #include "pico/multicore.h"
 #include "core_1/core_1.h"
+
+#include "libs/sensor_bme/pico-devices/src/devices/sensor_bme280/include/sensor/bme280.h"
+#include "libs/sensor_bme/pico-devices/src/pico/callbacks_blocking/include/callbacks/blocking.h"
+// #include "callbacks/blocking.h"
 #define FLAG_VALUE 123
 #define JOYSTICK true
 #define DEBOUNCE_DELAY_MS 600
@@ -34,7 +38,8 @@ datetime_t dt;
 bool error;
 SM_Display fsm_display;
 volatile bool sw_triggered = false;
-BME280 bme;
+// BME280 bme;
+bme280_t bme280;
 DFP dfp;
 
 int g_sens_temperature;
@@ -56,7 +61,7 @@ void alarm_callback(void)
     uint16_t duration;
     switch (alarm_state)
     {
-    case 0:// start route duration before alarm clock -> set dim lights
+    case 0: // start route duration before alarm clock -> set dim lights
         alarmtime = fsm_display.get_alarm_time();
         duration = (uint16_t)(fsm_display.get_duration_min() / 2);
         if (alarmtime.min < duration)
@@ -118,8 +123,6 @@ void alarm_callback(void)
     }
 }
 
-
-
 void gpio_sw_callback(uint gpio, uint32_t events)
 {
     static uint64_t u64_ts_last_input = 0;
@@ -129,6 +132,21 @@ void gpio_sw_callback(uint gpio, uint32_t events)
         printf("ENTER\n");
         fsm_display.run(dEnter);
     }
+}
+
+void setup_test_bme(void)
+{
+    stdio_init_all();
+
+    gpio_set_function(20, GPIO_FUNC_I2C);
+    gpio_set_function(21, GPIO_FUNC_I2C);
+    gpio_pull_up(21);
+    gpio_pull_up(20);
+
+    i2c_init(i2c0, 400000);
+
+    bme280_init_struct(&bme280, i2c0, 0x76, &pico_callbacks_blocking);
+    bme280_init(&bme280);
 }
 
 /**
@@ -147,8 +165,8 @@ displayDirection getInput(void)
     uint adc_x = adc_read();
     adc_select_input(1);
     uint adc_y = adc_read();
-    printf("x:%d\t",adc_x);
-    printf("y:%d\n",adc_y);
+    printf("x:%d\t", adc_x);
+    printf("y:%d\n", adc_y);
     adc_x /= 500;
     adc_y /= 500;
     if (adc_x < 3)
@@ -267,12 +285,13 @@ int main()
     gpio_set_input_enabled(PIN_JOYSTICK_SW, true);
     gpio_set_pulls(PIN_JOYSTICK_SW, true, false);
     gpio_set_irq_enabled_with_callback(PIN_JOYSTICK_SW, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_sw_callback);
+    setup_test_bme();
     sleep_ms(20);
-    bme.init((void *)i2c0, 100 * 1000, BME280_I2C_ADDR_PRIM, 21, 20); // BME280_I2C_ADDR_PRIM
-    // bme.init((void *) i2c1, 100*1000, BME280_I2C_ADDR_SEC,19, 18);
-    bme.test_device_id();
+    // bme.init((void *)i2c0, 100 * 1000, BME280_I2C_ADDR_PRIM, 21, 20); // BME280_I2C_ADDR_PRIM
+    //  bme.init((void *) i2c1, 100*1000, BME280_I2C_ADDR_SEC,19, 18);
+    // bme.test_device_id();
     sleep_ms(500);
-    g_sens_temperature = bme.get_temperature();
+    // g_sens_temperature = bme.get_temperature();
     printf("c0: started\n");
     // SPI initialisation. This example will use SPI at 1MHz.
     // spi_init(SPI_PORT, 1000*1000);
@@ -294,10 +313,21 @@ int main()
     while (1)
     {
         sleep_ms(100);
-        bme.test_device_id();
+        // bme.test_device_id();
         e_menu_instruction = getInput();
-        g_sens_temperature=bme.get_temperature();
-        printf("%.2fC\n",(float)g_sens_temperature/100);
+        for (uint32_t i = 1;; ++i)
+        {
+            bme280_reading_t r;
+            bme280_read(&bme280, &r);
+
+            printf(
+                "\n%u Temperature: %.2f°C, Pressure: %.2f Pa, Humidity: %.2f%%",
+                i, r.temperature, r.pressure, r.humidity);
+
+            sleep_ms(200);
+        }
+        // g_sens_temperature=bme.get_temperature();
+        // printf("%.2fC\n",(float)g_sens_temperature/100);
         e_menu_instruction = getInput();
         fsm_display.run(e_menu_instruction);
         set_ring(00, 56, 78);

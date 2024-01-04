@@ -8,7 +8,6 @@ pico_multicore
 hardware_rtc
 pico_ss_oled
 pico_sync
-bme_280
 dfplayer
 )
 

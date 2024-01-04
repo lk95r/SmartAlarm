@@ -9,9 +9,9 @@ add_subdirectory(
   ./rgb_lights
 )
 
-add_subdirectory(
-  ./bme_280
-)
+#add_subdirectory(
+# ./bme_280
+#)
 
 add_subdirectory(
   ./globals
@@ -20,3 +20,7 @@ add_subdirectory(
 add_subdirectory(
   ./dfplayer
 )
+
+add_subdirectory(
+  ./sensor_bme/pico-devices/src
+  )
