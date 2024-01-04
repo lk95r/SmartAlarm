@@ -298,7 +298,7 @@ int main()
         e_menu_instruction = getInput();
         g_sens_temperature=bme.get_temperature();
         printf("%.2fC\n",(float)g_sens_temperature/100);
-        e_menu_instruction = getDirection();
+        e_menu_instruction = getInput();
         fsm_display.run(e_menu_instruction);
         set_ring(00, 56, 78);
         // check_rtc();

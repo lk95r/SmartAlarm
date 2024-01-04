@@ -27,8 +27,8 @@ class BME280{
     uint m_i2c_address;
     uint m_pin_scl;
     uint m_pin_sda;
-    sens_data m_comp_data;
-    sens_data m_uncomp_data;
+    sens_data_t m_comp_data;
+    sens_data_t m_uncomp_data;
 
     bme280_calib_data m_cal_values;
     int32_t compensate_temperature(void);
