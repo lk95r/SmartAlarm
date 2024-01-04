@@ -1,11 +1,18 @@
 #pragma once
 
-#include "libs/bme_280/bme_280.h"
+#include "dfplayer.h"
 #include "pico/mutex.h"
+
 
 #define BOARD_TYPE 0 //0 = Pico W
 #define ONLINE false
 
+
+typedef struct {
+    uint32_t pressure;
+    uint32_t temperature;
+    uint32_t humidity;
+}sens_data_t;
 
 /**
  * @brief typedef for shared ram
@@ -22,3 +29,4 @@ typedef struct
  */
 extern sram_t env_data;
 extern mutex_t mut_sram;
+extern DFP dfp;

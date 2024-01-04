@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(PICO_SDK_PATH "C:/Program Files/Raspberry Pi/Pico SDK v1.5.1/pico-sdk")
 
 set(PICO_BOARD pico_w CACHE STRING "Board type")
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
@@ -50,6 +51,9 @@ target_include_directories(SmartAlarm PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
   ${CMAKE_CURRENT_LIST_DIR}/libs/sm_display 
   ${CMAKE_CURRENT_LIST_DIR}/core_1
+  ${CMAKE_CURRENT_LIST_DIR}/libs/globals 
+  ${CMAKE_CURRENT_LIST_DIR}/libs/bme_280
+  ${CMAKE_CURRENT_LIST_DIR}/libs/dfplayer
 )
 
 
@@ -65,14 +69,16 @@ target_link_libraries(SmartAlarm
         hardware_rtc
         hardware_adc
         hardware_gpio
+        hardware_uart
         pico_multicore
         pico_sync
+        globals
         sm_display        
         core_1
         pico_ss_oled
         rgb_lights
         bme_280
-        globals
+        dfplayer
         )
 
 pico_add_extra_outputs(SmartAlarm)

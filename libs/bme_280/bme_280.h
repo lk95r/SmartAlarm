@@ -8,14 +8,9 @@
 #include "hardware/i2c.h"
 #include "hardware/gpio.h"
 #include "bme_280_defines.h"
-
+#include "globals.h"
 #define DEFAULT_BAUDRATE 100*1000
 
-typedef struct {
-    uint32_t pressure;
-    int32_t temperature;
-    uint32_t humidity;
-}sens_data_t;
 
 class BME280{
     public:

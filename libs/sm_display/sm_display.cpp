@@ -5,6 +5,7 @@
 #include "sm_display.h"
 
 
+
 /**
  * @brief Construct a new sm display::sm display object as a state machine
  * and initializes m_Oled object
@@ -44,8 +45,8 @@ void SM_Display::run(displayDirection direction)
  * @brief set callback function to be called for alarm
  * 
  * @param callback function pointer to callback function
- * @return int -1 when nullptr is passed
- * @return int 0 success
+ * @return int -1: when nullptr is passed, 
+ * @return int 0: success
  */
 int SM_Display::sm_set_callback(void* callback){
     if(callback == nullptr){
@@ -56,6 +57,23 @@ int SM_Display::sm_set_callback(void* callback){
         return 0;
     }
     
+}
+/**
+ * @brief 
+ * 
+ * @return uint16_t duration of alarm in minutes
+ */
+uint16_t SM_Display::get_duration_min(void){
+    return this->duration_min;
+}
+
+/**
+ * @brief returns set alarm time
+ * 
+ * @return datetime_t 
+ */
+datetime_t SM_Display::get_alarm_time(void){
+    return this->m_alarm_time;
 }
 
 /**
@@ -74,7 +92,8 @@ void SM_Display::next(void (SM_Display::*funcptr)(displayDirection))
  * @param direction 
  */
 void SM_Display::sm_state_init(displayDirection direction)
-{
+{   
+    dfp.init();
     next(&SM_Display::sm_state_idle);
     return;
 }
@@ -556,7 +575,7 @@ void SM_Display::sm_state_set_alarmtone(displayDirection direction)
  */
 void SM_Display::sm_state_adjust_tone(displayDirection direction)
 {
-    static int tone_nr = 0;
+    static uint16_t tone_nr = 0;
     char str_tone[2];
     sprintf(str_tone,"%2d",tone_nr);
     m_Oled.write_string(0,0,1,str_tone,FONT_LARGE,0,1);
@@ -567,6 +586,7 @@ void SM_Display::sm_state_adjust_tone(displayDirection direction)
         next(&SM_Display::sm_state_idle);
         break;
     case dEnter:
+        dfp.set_track(tone_nr);
         next(&SM_Display::sm_state_idle);
         break;
     case dLeft:
@@ -641,11 +661,10 @@ void SM_Display::sm_state_set_pre_runtime(displayDirection direction)
  */
 void SM_Display::sm_state_adjust_time(displayDirection direction)
 {
-    static int duration_min = 0;
     char str_time[3];
-    sprintf(str_time,"%3d",duration_min);
+    sprintf(str_time,"%3d",this->duration_min);
     m_Oled.write_string(0,0,1,str_time,FONT_LARGE,0,1);
-    printf(" %d min\n", duration_min);
+    printf(" %d min\n", this->duration_min);
     switch (direction)
     {
     case dTimeout:
@@ -659,12 +678,12 @@ void SM_Display::sm_state_adjust_time(displayDirection direction)
         break;
     case dUp:
         m_Oled.fill(0,1);
-        duration_min++;
+        this->duration_min++;
         next(&SM_Display::sm_state_adjust_time);
         break;
     case dDown:
         m_Oled.fill(0,1);
-        duration_min--;
+        this->duration_min--;
         next(&SM_Display::sm_state_adjust_time);
         break;
     default:

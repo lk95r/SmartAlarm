@@ -16,3 +16,7 @@ add_subdirectory(
 add_subdirectory(
   ./globals
 )
+
+add_subdirectory(
+  ./dfplayer
+)

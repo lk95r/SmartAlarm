@@ -7,8 +7,9 @@ pico_stdlib
 pico_multicore
 hardware_rtc
 pico_ss_oled
-bme_280
 pico_sync
+bme_280
+dfplayer
 )
 
 target_include_directories(globals PUBLIC ${CMAKE_CURRENT_LIST_DIR})
