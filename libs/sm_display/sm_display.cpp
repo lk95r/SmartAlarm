@@ -106,11 +106,11 @@ void SM_Display::sm_state_init(displayDirection direction)
  * @param direction input to statemachine possible to open menu
  */
 void SM_Display::sm_state_idle(displayDirection direction)
-{
+{   
     static uint32_t u32_display_hour =0;
     static uint32_t u32_display_min=0;
     char time[5];
-    char temperature[4];
+    char str_temperature[4];
     char humidity[7];
     if (rtc_running())
     {
@@ -119,10 +119,10 @@ void SM_Display::sm_state_idle(displayDirection direction)
         //if(m_dt.hour != u32_display_hour || m_dt.min != u32_display_min){ //TODO: fix displaying time also when moving to idle from different state;
         //    m_Oled.fill(0,1);
             sprintf(time,"%2d:%2d",m_dt.hour,m_dt.min);
-            sprintf(temperature,"%2dC",25);
+            sprintf(str_temperature,"%2dC",25);
             sprintf(humidity,"%2d%rHs",99);
             m_Oled.write_string(0,0,2,(char *)time,FONT_LARGE,0,1);
-            m_Oled.write_string(0,0,0,(char *)temperature,FONT_8x8,0,1);
+            m_Oled.write_string(0,0,0,(char *)str_temperature,FONT_8x8,0,1);
             m_Oled.write_string(0,0,1,(char *)humidity,FONT_8x8,0,1);
         //    u32_display_hour=m_dt.hour;
         //    u32_display_min=m_dt.min;
