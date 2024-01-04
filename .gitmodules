@@ -1,3 +1,6 @@
 [submodule "libs/pi-pico-ss-oled"]
 	path = libs/pi-pico-ss-oled
 	url = https://github.com/martinkooij/pi-pico-ss-oled.git
+[submodule "libs/sensor_bme/pico-devices"]
+	path = libs/sensor_bme/pico-devices
+	url = https://github.com/fivdi/pico-devices.git
