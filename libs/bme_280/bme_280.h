@@ -15,7 +15,7 @@ typedef struct {
     uint32_t pressure;
     int32_t temperature;
     uint32_t humidity;
-}sens_data;
+}sens_data_t;
 
 class BME280{
     public:
@@ -24,6 +24,7 @@ class BME280{
     uint test_device_id(void);
     int32_t get_temperature(void);
     
+    sens_data_t data;
     
     private:
     void* m_i2c_inst;
